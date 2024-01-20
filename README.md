@@ -60,3 +60,29 @@ struct SHMatrix {
     public static SHMatrix Rotate(Vector3 xyzDegrees)
 }
 ```
+
+# Examples
+Rotating a light probe:
+```cs
+SphericalHarmonicsL2 sh = LightmapSettings.lightProbes.bakedProbes[0];
+SHMatrix rotMat = SHMatrix.Rotate(transform.eulerAngles);
+sh = rotMat * sh;
+LightmapSettings.lightProbes.bakedProbes = new[] { sh };
+```
+
+Projecting a function into SH:
+```
+SphericalHarmonicsL2 sh1 = RawSphericalHarmonicsL2.ProjectIntoSHMonteCarlo(
+    (direction) => {
+        Vector3 dirScaled = direction * 0.5f + new Vector3(0.5f, 0.5f, 0.5f);
+        return new Color(dirScaled.x, dirScaled.y, dirScaled.z);
+    },
+    1000);
+
+SphericalHarmonicsL2 sh2 = RawSphericalHarmonicsL2.ProjectIntoSHRiemann(
+    (direction) => {
+        Vector3 dirScaled = direction * 0.5f + new Vector3(0.5f, 0.5f, 0.5f);
+        return new Color(dirScaled.x, dirScaled.y, dirScaled.z);
+    },
+    100, 100);
+```
