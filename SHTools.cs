@@ -346,6 +346,15 @@ namespace SHTools
         }
 
         /// <summary>
+        /// Get or set the RGB coefficients at the given and <paramref name="coefficient"/>.
+        /// </summary>
+        public Vector3 this[int coefficient]
+        {
+            get => new Vector3(sh[0, coefficient], sh[1, coefficient], sh[2, coefficient]);
+            set { sh[0, coefficient] = value[0]; sh[1, coefficient] = value[1]; sh[2, coefficient] = value[2]; }
+        }
+
+        /// <summary>
         /// Linearly interpolate between two sets of SH coefficients.
         /// </summary>
         /// <param name="a">First SH.</param>
@@ -355,6 +364,155 @@ namespace SHTools
         public static RawSphericalHarmonicsL2 Lerp(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b, float t)
         {
             return SHUtility.Lerp(a.AsRaw(), b.AsRaw(), t);
+        }
+
+        /// <summary>
+        /// Calculate the convolution of two sets of SH coefficients.
+        /// This is the integral of the product of the two spherical functions over the sphere. 
+        /// </summary>
+        /// <param name="a">First SH to convolve.</param>
+        /// <param name="b">Second SH to convolve.</param>
+        /// <returns>Convolution of <paramref name="a"/> with <paramref name="b"/>.</returns>
+        public static RawSphericalHarmonicsL2 Convolve(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+        {
+            RawSphericalHarmonicsL2 result = new();
+            for (int i = 0; i < 9; i++)
+            {
+                result[0, i] = a[0, i] * b[0, i];
+                result[1, i] = a[1, i] * b[1, i];
+                result[2, i] = a[2, i] * b[2, i];
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Calculate the convolution of this set of SH coefficients with another.
+        /// This is the integral of the product of the two spherical functions over the sphere. 
+        /// </summary>
+        /// <param name="other">SH to calculate convolution with.</param>
+        /// <returns>Convolution of this SH with <paramref name="other"/>.</returns>
+        public void Convolve(in RawSphericalHarmonicsL2 other)
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                sh[0, i] *= other[0, i];
+                sh[1, i] *= other[1, i];
+                sh[2, i] *= other[2, i];
+            }
+        }
+
+        /// <summary>
+        /// Calculates the triple product of two sets of SH coefficients. This can be thought of as multiplying two SH functions together.
+        /// Based on https://www.microsoft.com/en-us/research/publication/code-generation-and-factoring-for-fast-evaluation-of-low-order-spherical-harmonic-products-and-squares/ 
+        /// </summary>
+        /// <param name="a">First SH in the product.</param>
+        /// <param name="b">Second SH in the product.</param>
+        /// <returns>The triple product of two set of SH coefficients.</returns>
+        public static RawSphericalHarmonicsL2 Product(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+        {
+            RawSphericalHarmonicsL2 result = new();
+            Vector3 ta, tb, t;
+
+            const float C0 = 0.282094792935999980f;
+            const float C1 = -0.126156626101000010f;
+            const float C2 = 0.218509686119999990f;
+            const float C3 = 0.252313259986999990f;
+            const float C4 = 0.180223751576000010f;
+            const float C5 = 0.156078347226000000f;
+            const float C6 = 0.090111875786499998f;
+            for (int i = 0; i < 3; i++)
+            {
+                result[0] = Vector3.Scale(C0*a[0],b[0]);
+                ta = C0*a[0]+C1*a[6]-C2*a[8];
+                tb = C0*b[0]+C1*b[6]-C2*b[8];
+                result[1] = Vector3.Scale(ta,b[1])+Vector3.Scale(tb,a[1]);
+                t = Vector3.Scale(a[1],b[1]);
+                result[0] += C0*t;
+                result[6] = C1*t;
+                result[8] = -C2*t;
+                ta = C2*a[5];
+                tb = C2*b[5];
+                result[1] += Vector3.Scale(ta,b[2])+Vector3.Scale(tb,a[2]);
+                result[2] = Vector3.Scale(ta,b[1])+Vector3.Scale(tb,a[1]);
+                t = Vector3.Scale(a[1],b[2])+Vector3.Scale(a[2],b[1]);
+                result[5] = C2*t;
+                ta = C2*a[4];
+                tb = C2*b[4];
+                result[1] += Vector3.Scale(ta,b[3])+Vector3.Scale(tb,a[3]);
+                result[3] = Vector3.Scale(ta,b[1])+Vector3.Scale(tb,a[1]);
+                t = Vector3.Scale(a[1],b[3])+Vector3.Scale(a[3],b[1]);
+                result[4] = C2*t;
+                ta = C0*a[0]+C3*a[6];
+                tb = C0*b[0]+C3*b[6];
+                result[2] += Vector3.Scale(ta,b[2])+Vector3.Scale(tb,a[2]);
+                t = Vector3.Scale(a[2],b[2]);
+                result[0] += C0*t;
+                result[6] += C3*t;
+                ta = C2*a[7];
+                tb = C2*b[7];
+                result[2] += Vector3.Scale(ta,b[3])+Vector3.Scale(tb,a[3]);
+                result[3] += Vector3.Scale(ta,b[2])+Vector3.Scale(tb,a[2]);
+                t = Vector3.Scale(a[2],b[3])+Vector3.Scale(a[3],b[2]);
+                result[7] = C2*t;
+                ta = C0*a[0]+C1*a[6]+C2*a[8];
+                tb = C0*b[0]+C1*b[6]+C2*b[8];
+                result[3] += Vector3.Scale(ta,b[3])+Vector3.Scale(tb,a[3]);
+                t = Vector3.Scale(a[3],b[3]);
+                result[0] += C0*t;
+                result[6] += C1*t;
+                result[8] += C2*t;
+                ta = C0*a[0]-C4*a[6];
+                tb = C0*b[0]-C4*b[6];
+                result[4] += Vector3.Scale(ta,b[4])+Vector3.Scale(tb,a[4]);
+                t = Vector3.Scale(a[4],b[4]);
+                result[0] += C0*t;
+                result[6] -= C4*t;
+                ta = C5*a[7];
+                tb = C5*b[7];
+                result[4] += Vector3.Scale(ta,b[5])+Vector3.Scale(tb,a[5]);
+                result[5] += Vector3.Scale(ta,b[4])+Vector3.Scale(tb,a[4]);
+                t = Vector3.Scale(a[4],b[5])+Vector3.Scale(a[5],b[4]);
+                result[7] += C5*t;
+                ta = C0*a[0]+C6*a[6]-C5*a[8];
+                tb = C0*b[0]+C6*b[6]-C5*b[8];
+                result[5] += Vector3.Scale(ta,b[5])+Vector3.Scale(tb,a[5]);
+                t = Vector3.Scale(a[5],b[5]);
+                result[0] += C0*t;
+                result[6] += C6*t;
+                result[8] -= C5*t;
+                ta = C0*a[0];
+                tb = C0*b[0];
+                result[6] += Vector3.Scale(ta,b[6])+Vector3.Scale(tb,a[6]);
+                t = Vector3.Scale(a[6],b[6]);
+                result[0] += C0*t;
+                result[6] += C4*t;
+                ta = C0*a[0]+C6*a[6]+C5*a[8];
+                tb = C0*b[0]+C6*b[6]+C5*b[8];
+                result[7] += Vector3.Scale(ta,b[7])+Vector3.Scale(tb,a[7]);
+                t = Vector3.Scale(a[7],b[7]);
+                result[0] += C0*t;
+                result[6] += C6*t;
+                result[8] += C5*t;
+                ta = C0*a[0]-C4*a[6];
+                tb = C0*b[0]-C4*b[6];
+                result[8] += Vector3.Scale(ta,b[8])+Vector3.Scale(tb,a[8]);
+                t = Vector3.Scale(a[8],b[8]);
+                result[0] += C0*t;
+                result[6] -= C4*t;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the triple product of this set of SH coefficients and another. This can be thought of as multiplying two SH functions together.
+        /// Based on https://www.microsoft.com/en-us/research/publication/code-generation-and-factoring-for-fast-evaluation-of-low-order-spherical-harmonic-products-and-squares/ 
+        /// </summary>
+        /// <param name="other">Set of SH coefficients to calculate product with.</param>
+        /// <returns>The triple product of two set of SH coefficients.</returns>
+        public void Product(in RawSphericalHarmonicsL2 other)
+        {
+            this = Product(this, other);
         }
 
         // Radiance convolution constants
