@@ -158,7 +158,7 @@ namespace SHTools
         /// <summary>
         /// Unity doesn't store raw SH coefficients in SphericalHarmonicsL2. Instead, it stores the
         /// coefficients multiplied by the constant part of each basis function, and divided by PI.
-        /// This function converts from Unity's convention back to the raw coefficients.
+        /// It also swizzles L1 terms. This function converts from Unity's convention back to the raw coefficients.
         /// </summary>
         /// <param name="sh">The SH to convert.</param>
         public static void UnityConventionToRawCoefficientsInPlace(ref SphericalHarmonicsL2 sh)
@@ -167,9 +167,9 @@ namespace SHTools
             {
                 sh[i, 0] = (sh[i, 0] * Mathf.PI) / SHUtility.SH_L0_NORMALIZATION;
 
-                sh[i, 1] = (sh[i, 1] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
-                sh[i, 2] = (sh[i, 2] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
-                sh[i, 3] = (sh[i, 3] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                sh[i, 1] = (sh[i, 2] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                sh[i, 2] = (sh[i, 3] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                sh[i, 3] = (sh[i, 1] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
 
                 sh[i, 4] = (sh[i, 4] * Mathf.PI) / SHUtility.SH_L2_2_NORMALIZATION;
                 sh[i, 5] = (sh[i, 5] * Mathf.PI) / SHUtility.SH_L2_1_NORMALIZATION;
@@ -182,7 +182,7 @@ namespace SHTools
         /// <summary>
         /// Unity doesn't store raw SH coefficients in SphericalHarmonicsL2. Instead, it stores the
         /// coefficients multiplied by the constant part of each basis function, and divided by PI.
-        /// This function converts from raw coefficients to Unity's convention.
+        /// It also swizzles L1 terms. This function converts from raw coefficients to Unity's convention.
         /// </summary>
         /// <param name="sh">The SH to convert.</param>
         public static void RawCoefficientsToUnityConventionInPlace(ref SphericalHarmonicsL2 sh)
@@ -191,9 +191,9 @@ namespace SHTools
             {
                 sh[i, 0] = (sh[i, 0] * SHUtility.SH_L0_NORMALIZATION) / Mathf.PI;
 
-                sh[i, 1] = (sh[i, 1] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
-                sh[i, 2] = (sh[i, 2] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
-                sh[i, 3] = (sh[i, 3] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                sh[i, 1] = (sh[i, 2] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                sh[i, 2] = (sh[i, 3] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                sh[i, 3] = (sh[i, 1] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
 
                 sh[i, 4] = (sh[i, 4] * SHUtility.SH_L2_2_NORMALIZATION) / Mathf.PI;
                 sh[i, 5] = (sh[i, 5] * SHUtility.SH_L2_1_NORMALIZATION) / Mathf.PI;
@@ -206,7 +206,7 @@ namespace SHTools
         /// <summary>
         /// Unity doesn't store raw SH coefficients in SphericalHarmonicsL2. Instead, it stores the
         /// coefficients multiplied by the constant part of each basis function, and divided by PI.
-        /// This function converts from Unity's convention back to the raw coefficients.  
+        /// It also swizzles L1 terms. This function converts from Unity's convention back to the raw coefficients.  
         /// </summary>
         /// <param name="sh">The SH to convert.</param>
         public static SphericalHarmonicsL2 UnityConventionToRawCoefficients(in SphericalHarmonicsL2 sh)
@@ -219,7 +219,7 @@ namespace SHTools
         /// <summary>
         /// Unity doesn't store raw SH coefficients in SphericalHarmonicsL2. Instead, it stores the
         /// coefficients multiplied by the constant part of each basis function, and divided by PI.
-        /// This function converts from raw coefficients to Unity's convention.  
+        /// It also swizzles L1 terms. This function converts from raw coefficients to Unity's convention.
         /// </summary>
         /// <param name="sh">The SH to convert.</param>
         public static SphericalHarmonicsL2 RawCoefficientsToUnityConvention(in SphericalHarmonicsL2 sh)
@@ -281,48 +281,6 @@ namespace SHTools
                 1.0f
             );
             return result;
-        }
-
-        /// <summary>
-        /// Project a spherical function into SH using Monte Carlo integration.
-        /// </summary>
-        /// <param name="sphericalFunction">Function to project, going from a direction to a color.</param>
-        /// <param name="sampleCount">Number of samples to use.</param>
-        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
-        public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Vector3> sphericalFunction, int sampleCount)
-        {
-            return ProjectIntoSHMonteCarlo(sphericalFunction, i => UnityEngine.Random.onUnitSphere, sampleCount);
-        }
-
-        /// <summary>
-        /// Project a spherical function into SH using Monte Carlo integration.
-        /// </summary>
-        /// <param name="sphericalFunction">Function to project, going from a direction to a color.</param>
-        /// <param name="rngFunction">Function to generate random direction vectors, given the sample index.</param>
-        /// <param name="sampleCount">Number of samples to use.</param>
-        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
-        public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Vector3> sphericalFunction, Func<int, Vector3> rngFunction, int sampleCount)
-        {
-            RawSphericalHarmonicsL2 result = new();
-
-            for (int i = 0; i < sampleCount; i++)
-            {
-                Vector3 direction = rngFunction(i);
-                Vector3 eval = sphericalFunction(direction);
-
-                for (int n = 0; n < 9; n++)
-                {
-                    Vector3 proj = eval * SHBasis(n, direction);
-                    result[0, n] += proj.x;
-                    result[1, n] += proj.y;
-                    result[2, n] += proj.z;
-                }
-            }
-            
-            // Monte carlo normalization
-            float reciprocalSampleCount = 1.0f / sampleCount;
-            float reciprocalUniformSphereDensity = 4.0f * Mathf.PI;
-            return result * reciprocalSampleCount * reciprocalUniformSphereDensity;
         }
         #endregion
     }
@@ -493,6 +451,91 @@ namespace SHTools
         public void Clear()
         {
             sh.Clear();
+        }
+
+        /// <summary>
+        /// Project a spherical function into SH using Monte Carlo integration.
+        /// </summary>
+        /// <param name="sphericalFunction">Function to project, going from a direction to a color.</param>
+        /// <param name="sampleCount">Number of samples to use.</param>
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, int sampleCount)
+        {
+            return ProjectIntoSHMonteCarlo(sphericalFunction, i => UnityEngine.Random.onUnitSphere, sampleCount);
+        }
+
+        /// <summary>
+        /// Project a spherical function into SH using Monte Carlo integration.
+        /// </summary>
+        /// <param name="sphericalFunction">Function to project, going from a direction to a color.</param>
+        /// <param name="rngFunction">Function to generate random direction vectors, given the sample index.</param>
+        /// <param name="sampleCount">Number of samples to use.</param>
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, Func<int, Vector3> rngFunction, int sampleCount)
+        {
+            RawSphericalHarmonicsL2 result = new();
+
+            for (int i = 0; i < sampleCount; i++)
+            {
+                Vector3 direction = rngFunction(i);
+                Color eval = sphericalFunction(direction);
+
+                for (int n = 0; n < 9; n++)
+                {
+                    Color proj = eval * SHUtility.SHBasis(n, direction);
+                    result[0, n] += proj.r;
+                    result[1, n] += proj.g;
+                    result[2, n] += proj.b;
+                }
+            }
+            
+            // Monte carlo normalization
+            float reciprocalSampleCount = 1.0f / sampleCount;
+            float reciprocalUniformSphereDensity = 4.0f * Mathf.PI;
+            return result * reciprocalSampleCount * reciprocalUniformSphereDensity;
+        }
+
+        /// <summary>
+        /// Project a spherical function into SH using Riemann integration.
+        /// </summary>
+        /// <param name="sphericalFunction">Function to project, going from a direction to a color.</param>
+        /// <param name="samplesPhi">Number of samples to use along the azimuthal angle.</param>
+        /// <param name="samplesTheta">Number of samples to use along the polar angle.</param>
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        /// <remarks>The total sample count is <paramref name="samplesPhi"/> * <paramref name="samplesTheta"/>.</remarks> 
+        public static RawSphericalHarmonicsL2 ProjectIntoSHRiemann(Func<Vector3, Color> sphericalFunction, int samplesPhi, int samplesTheta)
+        {
+            float stepPhi = 2.0f * Mathf.PI / samplesPhi;
+            float stepTheta = Mathf.PI / samplesTheta;
+
+            RawSphericalHarmonicsL2 result = new();
+            for (int phiIndex = 0; phiIndex < samplesPhi; phiIndex++)
+            {
+                float phi = phiIndex * stepPhi;
+                for (int thetaIndex = 0; thetaIndex < samplesTheta; thetaIndex++)
+                {
+                    float theta = thetaIndex * stepTheta;
+
+                    // https://en.wikipedia.org/wiki/Solid_angle#Pyramid
+                    float quadArea = 4.0f * Mathf.Asin(Mathf.Tan(stepTheta / 2.0f) * Mathf.Tan(stepPhi / 2.0f));
+
+                    Vector3 direction = new Vector3(
+                        Mathf.Sin(theta) * Mathf.Cos(phi),
+                        Mathf.Sin(theta) * Mathf.Sin(phi),
+                        Mathf.Cos(theta)
+                    );
+                    Color integrandNoBasis = sphericalFunction(direction) * Mathf.Sin(theta) * quadArea;
+
+                    for (int n = 0; n < 9; n++)
+                    {
+                        Color integrand = integrandNoBasis * SHUtility.SHBasis(n, direction);
+                        result[0, n] += integrand.r;
+                        result[1, n] += integrand.g;
+                        result[2, n] += integrand.b;
+                    }
+                }
+            }
+            return result;
         }
 
         public static RawSphericalHarmonicsL2 operator +(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
