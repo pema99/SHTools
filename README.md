@@ -10,7 +10,7 @@ A little single file library for working with SphericalHarmonicsL2. The file int
 
 # Function overview
 
-```
+```cs
 static class SHUtility {
     public static float SHBasisL0()
     public static float SHBasisL1_1(Vector3 direction)
@@ -21,7 +21,7 @@ static class SHUtility {
     public static float SHBasisL20(Vector3 direction)
     public static float SHBasisL21(Vector3 direction)
     public static float SHBasisL22(Vector3 direction)
-    public static float SHBasis(int index, Vector3 
+    public static float SHBasis(int index, Vector3 direction)
     
     public static void UnityConventionToRawCoefficientsInPlace(ref SphericalHarmonicsL2 sh)
     public static void RawCoefficientsToUnityConventionInPlace(ref SphericalHarmonicsL2 sh)
