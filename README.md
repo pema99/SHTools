@@ -10,7 +10,7 @@ A little single file library for working with SphericalHarmonicsL2. The file int
 
 # Function overview
 
-```
+```cs
 static class SHUtility {
     public static float SHBasisL0()
     public static float SHBasisL1_1(Vector3 direction)
@@ -21,7 +21,7 @@ static class SHUtility {
     public static float SHBasisL20(Vector3 direction)
     public static float SHBasisL21(Vector3 direction)
     public static float SHBasisL22(Vector3 direction)
-    public static float SHBasis(int index, Vector3 
+    public static float SHBasis(int index, Vector3 direction)
     
     public static void UnityConventionToRawCoefficientsInPlace(ref SphericalHarmonicsL2 sh)
     public static void RawCoefficientsToUnityConventionInPlace(ref SphericalHarmonicsL2 sh)
@@ -59,4 +59,30 @@ struct SHMatrix {
     public static SHMatrix RotateZYZ(Vector3 alphaBetaGammaRadians)
     public static SHMatrix Rotate(Vector3 xyzDegrees)
 }
+```
+
+# Examples
+Rotating a light probe:
+```cs
+SphericalHarmonicsL2 sh = LightmapSettings.lightProbes.bakedProbes[0];
+SHMatrix rotMat = SHMatrix.Rotate(transform.eulerAngles);
+sh = rotMat * sh;
+LightmapSettings.lightProbes.bakedProbes = new[] { sh };
+```
+
+Projecting a function into SH:
+```cs
+SphericalHarmonicsL2 sh1 = RawSphericalHarmonicsL2.ProjectIntoSHMonteCarlo(
+    (direction) => {
+        Vector3 dirScaled = direction * 0.5f + new Vector3(0.5f, 0.5f, 0.5f);
+        return new Color(dirScaled.x, dirScaled.y, dirScaled.z);
+    },
+    1000);
+
+SphericalHarmonicsL2 sh2 = RawSphericalHarmonicsL2.ProjectIntoSHRiemann(
+    (direction) => {
+        Vector3 dirScaled = direction * 0.5f + new Vector3(0.5f, 0.5f, 0.5f);
+        return new Color(dirScaled.x, dirScaled.y, dirScaled.z);
+    },
+    100, 100);
 ```
