@@ -164,9 +164,12 @@ namespace SHTools
             {
                 sh[i, 0] = (sh[i, 0] * Mathf.PI) / SHUtility.SH_L0_NORMALIZATION;
 
-                sh[i, 1] = (sh[i, 2] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
-                sh[i, 2] = (sh[i, 3] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
-                sh[i, 3] = (sh[i, 1] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                var sh1 = (sh[i, 1] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                var sh2 = (sh[i, 2] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                var sh3 = (sh[i, 3] * Mathf.PI) / SHUtility.SH_L1_NORMALIZATION;
+                sh[i, 1] = sh3;
+                sh[i, 2] = sh1;
+                sh[i, 3] = sh2;
 
                 sh[i, 4] = (sh[i, 4] * Mathf.PI) / SHUtility.SH_L2_2_NORMALIZATION;
                 sh[i, 5] = (sh[i, 5] * Mathf.PI) / SHUtility.SH_L2_1_NORMALIZATION;
@@ -188,9 +191,12 @@ namespace SHTools
             {
                 sh[i, 0] = (sh[i, 0] * SHUtility.SH_L0_NORMALIZATION) / Mathf.PI;
 
-                sh[i, 1] = (sh[i, 2] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
-                sh[i, 2] = (sh[i, 3] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
-                sh[i, 3] = (sh[i, 1] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                var sh1 = (sh[i, 1] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                var sh2 = (sh[i, 2] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                var sh3 = (sh[i, 3] * SHUtility.SH_L1_NORMALIZATION) / Mathf.PI;
+                sh[i, 1] = sh2;
+                sh[i, 2] = sh3;
+                sh[i, 3] = sh1;
 
                 sh[i, 4] = (sh[i, 4] * SHUtility.SH_L2_2_NORMALIZATION) / Mathf.PI;
                 sh[i, 5] = (sh[i, 5] * SHUtility.SH_L2_1_NORMALIZATION) / Mathf.PI;
@@ -810,15 +816,15 @@ namespace SHTools
             float cos2A = Mathf.Cos(2.0f * angle);
             float sin2A = Mathf.Sin(2.0f * angle);
 
-            matrix.L1M00 = cosA;  matrix.L1M01 = 0; matrix.L1M02 = sinA;
-            matrix.L1M10 = 0;     matrix.L1M11 = 1; matrix.L1M12 = 0;
-            matrix.L1M20 = -sinA; matrix.L1M21 = 0; matrix.L1M22 = cosA;
+            matrix.L1M00 = cosA;  matrix.L1M01 = sinA; matrix.L1M02 = 0;
+            matrix.L1M10 = -sinA; matrix.L1M11 = cosA; matrix.L1M12 = 0;
+            matrix.L1M20 = 0;     matrix.L1M21 = 0;    matrix.L1M22 = 1;
 
-            matrix.L2M00 = cos2A;  matrix.L2M01 = 0;     matrix.L2M02 = 0; matrix.L2M03 = 0;    matrix.L2M04 = sin2A;
-            matrix.L2M10 = 0;      matrix.L2M11 = cosA;  matrix.L2M12 = 0; matrix.L2M13 = sinA; matrix.L2M14 = 0;
-            matrix.L2M20 = 0;      matrix.L2M21 = 0;     matrix.L2M22 = 1; matrix.L2M23 = 0;    matrix.L2M24 = 0;
-            matrix.L2M30 = 0;      matrix.L2M31 = -sinA; matrix.L2M32 = 0; matrix.L2M33 = cosA; matrix.L2M34 = 0;
-            matrix.L2M40 = -sin2A; matrix.L2M41 = 0;     matrix.L2M42 = 0; matrix.L2M43 = 0;    matrix.L2M44 = cos2A;
+            matrix.L2M00 = cos2A; matrix.L2M01 = 0;    matrix.L2M02 = 0; matrix.L2M03 = 0;     matrix.L2M04 = -sin2A;
+            matrix.L2M10 = 0;     matrix.L2M11 = cosA; matrix.L2M12 = 0; matrix.L2M13 = -sinA; matrix.L2M14 = 0;
+            matrix.L2M20 = 0;     matrix.L2M21 = 0;    matrix.L2M22 = 1; matrix.L2M23 = 0;     matrix.L2M24 = 0;
+            matrix.L2M30 = 0;     matrix.L2M31 = sinA; matrix.L2M32 = 0; matrix.L2M33 = cosA;  matrix.L2M34 = 0;
+            matrix.L2M40 = sin2A; matrix.L2M41 = 0;    matrix.L2M42 = 0; matrix.L2M43 = 0;     matrix.L2M44 = cos2A;
 
             return matrix;
         }
@@ -828,9 +834,9 @@ namespace SHTools
         /// </summary>
         public static readonly SHMatrix RotationXPositive90 = new()
         {
-            L1M00 = 0, L1M01 = -1, L1M02 = 0,
-            L1M10 = 1, L1M11 = 0,  L1M12 = 0,
-            L1M20 = 0, L1M21 = 0,  L1M22 = 1,
+            L1M00 = 1, L1M01 = 0,  L1M02 = 0,
+            L1M10 = 0, L1M11 = 0, L1M12 = -1,
+            L1M20 = 0, L1M21 = 1,  L1M22 = 0,
 
             L2M00 = 0, L2M01 = 0,  L2M02 = 0,     L2M03 = -1, L2M04 = 0,
             L2M10 = 0, L2M11 = -1, L2M12 = 0,     L2M13 = 0,  L2M14 = 0,
@@ -844,9 +850,9 @@ namespace SHTools
         /// </summary>
         public static readonly SHMatrix RotationXNegative90 = new()
         {
-            L1M00 = 0,  L1M01 = 1, L1M02 = 0,
-            L1M10 = -1, L1M11 = 0, L1M12 = 0,
-            L1M20 = 0,  L1M21 = 0, L1M22 = 1,
+            L1M00 = 1,  L1M01 = 0,  L1M02 = 0,
+            L1M10 = 0,  L1M11 = 0,  L1M12 = 1,
+            L1M20 = 0,  L1M21 = -1, L1M22 = 0,
 
             L2M00 = 0, L2M01 = 0,  L2M02 = 0,     L2M03 = 1, L2M04 = 0,
             L2M10 = 0, L2M11 = -1, L2M12 = 0,     L2M13 = 0, L2M14 = 0,
@@ -876,17 +882,17 @@ namespace SHTools
 
             float cosBeta = eulerMat[2, 2];
             float sinBeta = Mathf.Sqrt(1.0f - eulerMat[2, 2] * eulerMat[2, 2]);
-            float beta = -Mathf.Atan2(sinBeta, cosBeta);
+            float beta = Mathf.Atan2(sinBeta, cosBeta);
             
             if (sinBeta < 0.001f)
             {
                 float cosAlpha = eulerMat[1, 1];
                 float sinAlpha = -eulerMat[1, 0];
-                float alpha = -Mathf.Atan2(sinAlpha, cosAlpha);
+                float alpha = Mathf.Atan2(sinAlpha, cosAlpha);
 
                 float cosGamma = 1.0f;
                 float sinGamma = 0.0f;
-                float gamma = -Mathf.Atan2(sinGamma, cosGamma);
+                float gamma = Mathf.Atan2(sinGamma, cosGamma);
 
                 return new Vector3(alpha, beta, gamma);
             }
@@ -894,11 +900,11 @@ namespace SHTools
             {
                 float cosAlpha = eulerMat[2, 0] / sinBeta;
                 float sinAlpha = eulerMat[2, 1] / sinBeta;
-                float alpha = -Mathf.Atan2(sinAlpha, cosAlpha);
+                float alpha = Mathf.Atan2(sinAlpha, cosAlpha);
 
                 float cosGamma = -eulerMat[0, 2] / sinBeta;
                 float sinGamma = eulerMat[1, 2] / sinBeta;
-                float gamma = -Mathf.Atan2(sinGamma, cosGamma);
+                float gamma = Mathf.Atan2(sinGamma, cosGamma);
 
                 return new Vector3(alpha, beta, gamma);
             }
