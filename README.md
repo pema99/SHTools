@@ -71,7 +71,7 @@ LightmapSettings.lightProbes.bakedProbes = new[] { sh };
 ```
 
 Projecting a function into SH:
-```
+```cs
 SphericalHarmonicsL2 sh1 = RawSphericalHarmonicsL2.ProjectIntoSHMonteCarlo(
     (direction) => {
         Vector3 dirScaled = direction * 0.5f + new Vector3(0.5f, 0.5f, 0.5f);
