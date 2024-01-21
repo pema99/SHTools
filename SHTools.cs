@@ -280,6 +280,91 @@ namespace SHTools
             return result;
         }
         #endregion
+
+        #region Windowing
+        /// <summary>
+        /// Window the given SH coefficients with a Hanning window in place, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/StupidSH36.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static void WindowHanningInPlace(ref SphericalHarmonicsL2 sh, float w)
+        {
+            float Hanning(float l)
+            {
+                return (1.0f + Mathf.Cos(Mathf.PI * l) / w) / 2.0f;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                sh[i, 1] *= Hanning(1);
+                sh[i, 2] *= Hanning(1);
+                sh[i, 3] *= Hanning(1);
+                sh[i, 4] *= Hanning(2);
+                sh[i, 5] *= Hanning(2);
+                sh[i, 6] *= Hanning(2);
+                sh[i, 7] *= Hanning(2);
+                sh[i, 8] *= Hanning(2);
+            }
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Hanning window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/StupidSH36.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static SphericalHarmonicsL2 WindowHanning(in SphericalHarmonicsL2 sh, float w)
+        {
+            SphericalHarmonicsL2 result = sh;
+            WindowHanningInPlace(ref result, w);
+            return result;
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Lancosz/sinc window in place, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/shdering.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static void WindowLancoszInPlace(ref SphericalHarmonicsL2 sh, float w)
+        {
+            float Lancosz(float l)
+            {
+                float v = Mathf.PI * l / w;
+                return Mathf.Pow(Mathf.Sin(v) / v, 4.0f);
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                sh[i, 1] *= Lancosz(1);
+                sh[i, 2] *= Lancosz(1);
+                sh[i, 3] *= Lancosz(1);
+                sh[i, 4] *= Lancosz(2);
+                sh[i, 5] *= Lancosz(2);
+                sh[i, 6] *= Lancosz(2);
+                sh[i, 7] *= Lancosz(2);
+                sh[i, 8] *= Lancosz(2);
+            }
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Lancosz/sinc window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/shdering.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static SphericalHarmonicsL2 WindowLancosz(in SphericalHarmonicsL2 sh, float w)
+        {
+            SphericalHarmonicsL2 result = sh;
+            WindowLancoszInPlace(ref result, w);
+            return result;
+        }
+        #endregion
     }
 
     /// <summary>
@@ -548,6 +633,15 @@ namespace SHTools
         }
 
         /// <summary>
+        /// Convolves radiance stored in this SH to irradiance.
+        /// Based on https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf
+        /// </summary>
+        public void ConvolveRadianceToIrradiance()
+        {
+            ConvolveRadianceToIrradianceInPlace(ref this);
+        }
+
+        /// <summary>
         /// Converts irradiance stored in SH back to radiance, in place.
         /// Based on https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf
         /// </summary>
@@ -578,6 +672,15 @@ namespace SHTools
             RawSphericalHarmonicsL2 result = sh;
             DeConvolveIrradianceToRadianceInPlace(ref result);
             return result;
+        }
+
+        /// <summary>
+        /// Converts irradiance stored in this SH back to radiance.
+        /// Based on https://cseweb.ucsd.edu/~ravir/papers/envmap/envmap.pdf
+        /// </summary>
+        public void DeConvolveIrradianceToRadiance()
+        {
+            DeConvolveIrradianceToRadianceInPlace(ref this);
         }
 
         /// <summary>
@@ -780,6 +883,80 @@ namespace SHTools
         public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHRiemann(Cubemap cubemap, int samplesPhi, int samplesTheta, bool convolveToIrradiance = true)
         {
             return ProjectCubemapIntoSHHelper(cubemap, convolveToIrradiance, (sphericalFunction) => ProjectIntoSHRiemann(sphericalFunction, samplesPhi, samplesTheta));
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Hanning window in place, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/StupidSH36.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static void WindowHanningInPlace(ref RawSphericalHarmonicsL2 sh, float w)
+        {
+            SHUtility.WindowHanningInPlace(ref sh.sh, w);
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Hanning window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/StupidSH36.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static RawSphericalHarmonicsL2 WindowHanning(in RawSphericalHarmonicsL2 sh, float w)
+        {
+            RawSphericalHarmonicsL2 result = sh;
+            WindowHanningInPlace(ref result, w);
+            return result;
+        }
+
+        /// <summary>
+        /// Window these SH coefficients with a Hanning window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/StupidSH36.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="w">Windowing parameter.</param>
+        public void WindowHanning(float w)
+        {
+            WindowHanningInPlace(ref this, w);
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Lancosz/sinc window in place, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/shdering.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static void WindowLancoszInPlace(ref RawSphericalHarmonicsL2 sh, float w)
+        {
+            SHUtility.WindowLancoszInPlace(ref sh.sh, w);
+        }
+
+        /// <summary>
+        /// Window the given SH coefficients with a Lancosz/sinc window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/shdering.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="sh">Set of SH coefficients to window.</param>
+        /// <param name="w">Windowing parameter.</param>
+        public static RawSphericalHarmonicsL2 WindowLancosz(in RawSphericalHarmonicsL2 sh, float w)
+        {
+            RawSphericalHarmonicsL2 result = sh;
+            WindowLancoszInPlace(ref result, w);
+            return result;
+        }
+
+        /// <summary>
+        /// Window these SH coefficients with a Lancosz/sinc window, used to combat ringing.
+        /// Based on https://www.ppsloan.org/publications/shdering.pdf
+        /// Lower values of <paramref name="w"/> will reduce ringing but blur the result more. 
+        /// </summary>
+        /// <param name="w">Windowing parameter.</param>
+        public void WindowLancosz(float w)
+        {
+            WindowLancoszInPlace(ref this, w);
         }
 
         public static RawSphericalHarmonicsL2 operator +(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)

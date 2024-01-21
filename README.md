@@ -31,6 +31,11 @@ static class SHUtility {
     public static SphericalHarmonicsL2 Lerp(in SphericalHarmonicsL2 a, in SphericalHarmonicsL2 b, float t)
     
     public static Vector4[] GetShaderCoefficients(in SphericalHarmonicsL2 sh)
+
+    public static void WindowHanningInPlace(ref SphericalHarmonicsL2 sh, float w)
+    public static SphericalHarmonicsL2 WindowHanning(in SphericalHarmonicsL2 sh, float w)
+    public static void WindowLancoszInPlace(ref SphericalHarmonicsL2 sh, float w)
+    public static SphericalHarmonicsL2 WindowLancosz(in SphericalHarmonicsL2 sh, float w)
 }
 
 struct RawSphericalHarmonicsL2 {
@@ -48,8 +53,10 @@ struct RawSphericalHarmonicsL2 {
 
     public static void ConvolveRadianceToIrradianceInPlace(ref RawSphericalHarmonicsL2 sh)
     public static RawSphericalHarmonicsL2 ConvolveRadianceToIrradiance(in RawSphericalHarmonicsL2 sh)
+    public void ConvolveRadianceToIrradiance()
     public static void DeConvolveIrradianceToRadianceInPlace(ref RawSphericalHarmonicsL2 sh)
     public static RawSphericalHarmonicsL2 DeConvolveIrradianceToRadiance(in RawSphericalHarmonicsL2 sh)
+    public void DeConvolveIrradianceToRadiance()
 
     public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, int sampleCount)
     public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, Func<int, Vector3> rngFunction, int sampleCount)
@@ -58,6 +65,13 @@ struct RawSphericalHarmonicsL2 {
     public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, int sampleCount, bool convolveToIrradiance)
     public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, Func<int, Vector3> rngFunction, int sampleCount, bool convolveToIrradiance)
     public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHRiemann(Cubemap cubemap, int samplesPhi, int samplesTheta, bool convolveToIrradiance)
+
+    public static void WindowHanningInPlace(ref RawSphericalHarmonicsL2 sh, float w)
+    public static RawSphericalHarmonicsL2 WindowHanning(in RawSphericalHarmonicsL2 sh, float w)
+    public void WindowHanning(float w)
+    public static void WindowLancoszInPlace(ref RawSphericalHarmonicsL2 sh, float w)
+    public static RawSphericalHarmonicsL2 WindowLancosz(in RawSphericalHarmonicsL2 sh, float w)
+    public void WindowLancosz(float w)
 }
 
 struct SHMatrix {
