@@ -693,6 +693,95 @@ namespace SHTools
             return result;
         }
 
+        private static Vector2 GetCubemapSampleLocation(Vector3 dir, out CubemapFace face)
+        {
+            Vector3 absDir = new(Mathf.Abs(dir.x), Mathf.Abs(dir.y), Mathf.Abs(dir.z));
+            float mapping;
+            Vector2 uv;
+            if(absDir.z >= absDir.x && absDir.z >= absDir.y)
+            {
+                face = dir.z < 0.0 ? CubemapFace.NegativeZ : CubemapFace.PositiveZ;
+                mapping = 0.5f / absDir.z;
+                uv = new(dir.z < 0.0 ? -dir.x : dir.x, -dir.y);
+            }
+            else if(absDir.y >= absDir.x)
+            {
+                face = dir.y < 0.0 ? CubemapFace.NegativeY : CubemapFace.PositiveY;
+                mapping = 0.5f / absDir.y;
+                uv = new(dir.x, dir.y < 0.0 ? -dir.z : dir.z);
+            }
+            else
+            {
+                face = dir.x < 0.0 ? CubemapFace.NegativeX : CubemapFace.PositiveX;
+                mapping = 0.5f / absDir.x;
+                uv = new(dir.x < 0.0 ? dir.z : -dir.z, -dir.y);
+            }
+            return uv * mapping + 0.5f * Vector2.one;
+        }
+
+        private static RawSphericalHarmonicsL2 ProjectCubemapIntoSHHelper(Cubemap cubemap, bool convolveToIrradiance, Func<Func<Vector3, Color>, RawSphericalHarmonicsL2> runner)
+        {
+            bool sRGB = cubemap.isDataSRGB;
+            int width = cubemap.width;
+            int height = cubemap.height;
+
+            Color[][] faceColors = new Color[6][];
+            for (int i = 0; i < 6; i++)
+                faceColors[i] = cubemap.GetPixels((CubemapFace)i);
+
+            var sh = runner((direction) => {
+                var uv = GetCubemapSampleLocation(direction, out CubemapFace face);
+                int scaledX = (int)(uv.x * (width - 1));
+                int scaledY = (int)(uv.y * (height - 1));
+                var col = faceColors[(int)face][scaledY * width + scaledX];
+                return sRGB ? col.linear : col;
+            });
+
+            if (convolveToIrradiance)
+                ConvolveRadianceToIrradianceInPlace(ref sh);
+
+            return sh;
+        }
+
+        /// <summary>
+        /// Project a cubemap into SH using Monte Carlo integration.
+        /// </summary>
+        /// <param name="cubemap">Cubemap to project.</param>
+        /// <param name="sampleCount">Number of samples to use.</param>
+        /// <param name="convolveToIrradiance">Whether to convolve the result from radiance to irradiance. This should be set true for environment cubemaps.</param> 
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, int sampleCount, bool convolveToIrradiance = true)
+        {
+            return ProjectCubemapIntoSHMonteCarlo(cubemap, i => UnityEngine.Random.onUnitSphere, sampleCount, convolveToIrradiance);
+        }
+
+        /// <summary>
+        /// Project a cubemap into SH using Monte Carlo integration.
+        /// </summary>
+        /// <param name="cubemap">Cubemap to project.</param>
+        /// <param name="rngFunction">Function to generate random direction vectors, given the sample index.</param>
+        /// <param name="sampleCount">Number of samples to use.</param>
+        /// <param name="convolveToIrradiance">Whether to convolve the result from radiance to irradiance. This should be set true for environment cubemaps.</param>  
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, Func<int, Vector3> rngFunction, int sampleCount, bool convolveToIrradiance = true)
+        {
+            return ProjectCubemapIntoSHHelper(cubemap, convolveToIrradiance, (sphericalFunction) => ProjectIntoSHMonteCarlo(sphericalFunction, rngFunction, sampleCount));
+        }
+
+        /// <summary>
+        /// Project a cubemap into SH using Riemann integration.
+        /// </summary>
+        /// <param name="cubemap">Cubemap to project.</param>
+        /// <param name="samplesPhi">Number of samples to use along the azimuthal angle.</param>
+        /// <param name="samplesTheta">Number of samples to use along the polar angle.</param>
+        /// <param name="convolveToIrradiance">Whether to convolve the result from radiance to irradiance. This should be set true for environment cubemaps.</param> 
+        /// <returns>The function projected into a RawSphericalHarmonicsL2.</returns>
+        /// <remarks>The total sample count is <paramref name="samplesPhi"/> * <paramref name="samplesTheta"/>.</remarks> 
+        public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHRiemann(Cubemap cubemap, int samplesPhi, int samplesTheta, bool convolveToIrradiance = true)
+        {
+            return ProjectCubemapIntoSHHelper(cubemap, convolveToIrradiance, (sphericalFunction) => ProjectIntoSHRiemann(sphericalFunction, samplesPhi, samplesTheta));
+        }
+
         public static RawSphericalHarmonicsL2 operator +(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
         {
             RawSphericalHarmonicsL2 result = new();

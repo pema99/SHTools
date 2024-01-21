@@ -54,6 +54,10 @@ struct RawSphericalHarmonicsL2 {
     public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, int sampleCount)
     public static RawSphericalHarmonicsL2 ProjectIntoSHMonteCarlo(Func<Vector3, Color> sphericalFunction, Func<int, Vector3> rngFunction, int sampleCount)
     public static RawSphericalHarmonicsL2 ProjectIntoSHRiemann(Func<Vector3, Color> sphericalFunction, int samplesPhi, int samplesTheta)
+
+    public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, int sampleCount, bool convolveToIrradiance)
+    public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHMonteCarlo(Cubemap cubemap, Func<int, Vector3> rngFunction, int sampleCount, bool convolveToIrradiance)
+    public static RawSphericalHarmonicsL2 ProjectCubemapIntoSHRiemann(Cubemap cubemap, int samplesPhi, int samplesTheta, bool convolveToIrradiance)
 }
 
 struct SHMatrix {
