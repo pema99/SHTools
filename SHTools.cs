@@ -447,7 +447,6 @@ namespace SHTools
 
         /// <summary>
         /// Calculate the convolution of two sets of SH coefficients.
-        /// This is the integral of the product of the two spherical functions over the sphere. 
         /// </summary>
         /// <param name="sh">First SH to convolve.</param>
         /// <param name="filter">Second SH to convolve. Must be symmetric around the Z axis.</param>
@@ -478,7 +477,6 @@ namespace SHTools
 
         /// <summary>
         /// Calculate the convolution of this set of SH coefficients with another.
-        /// This is the integral of the product of the two spherical functions over the sphere.  
         /// </summary>
         /// <param name="filter">SH to calculate convolution with. Must be symmetric around the Z axis.</param>
         /// <returns>Convolution of this SH with <paramref name="filter"/>.</returns>
