@@ -449,34 +449,58 @@ namespace SHTools
         /// Calculate the convolution of two sets of SH coefficients.
         /// This is the integral of the product of the two spherical functions over the sphere. 
         /// </summary>
-        /// <param name="a">First SH to convolve.</param>
-        /// <param name="b">Second SH to convolve.</param>
-        /// <returns>Convolution of <paramref name="a"/> with <paramref name="b"/>.</returns>
-        public static RawSphericalHarmonicsL2 Convolve(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+        /// <param name="sh">First SH to convolve.</param>
+        /// <param name="filter">Second SH to convolve. Must be symmetric around the Z axis.</param>
+        /// <returns>Convolution of <paramref name="sh"/> with <paramref name="filter"/>.</returns>
+        /// <remarks>The passed SH <paramref name="filter"/> must be symmetric around the Z axis.</remarks>
+        public static RawSphericalHarmonicsL2 Convolve(in RawSphericalHarmonicsL2 sh, in RawSphericalHarmonicsL2 filter)
         {
             RawSphericalHarmonicsL2 result = new();
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 3; i++)
             {
-                result[0, i] = a[0, i] * b[0, i];
-                result[1, i] = a[1, i] * b[1, i];
-                result[2, i] = a[2, i] * b[2, i];
+                float l0Coeff = Mathf.Sqrt(Mathf.PI * 4.0f);
+                result[i, 0] = sh[i, 0] * filter[i, 0] * l0Coeff;
+
+                float l1Coeff = Mathf.Sqrt(Mathf.PI * 4.0f / 3.0f);
+                result[i, 1] = sh[i, 1] * filter[i, 2] * l1Coeff;
+                result[i, 2] = sh[i, 2] * filter[i, 2] * l1Coeff;
+                result[i, 3] = sh[i, 3] * filter[i, 2] * l1Coeff;
+
+                float l2Coeff = Mathf.Sqrt(Mathf.PI * 4.0f / 5.0f);
+                result[i, 4] = sh[i, 4] * filter[i, 6] * l2Coeff;
+                result[i, 5] = sh[i, 5] * filter[i, 6] * l2Coeff;
+                result[i, 6] = sh[i, 6] * filter[i, 6] * l2Coeff;
+                result[i, 7] = sh[i, 7] * filter[i, 6] * l2Coeff;
+                result[i, 8] = sh[i, 8] * filter[i, 6] * l2Coeff;
             }
             return result;
         }
 
         /// <summary>
         /// Calculate the convolution of this set of SH coefficients with another.
-        /// This is the integral of the product of the two spherical functions over the sphere. 
+        /// This is the integral of the product of the two spherical functions over the sphere.  
         /// </summary>
-        /// <param name="other">SH to calculate convolution with.</param>
-        /// <returns>Convolution of this SH with <paramref name="other"/>.</returns>
-        public void Convolve(in RawSphericalHarmonicsL2 other)
+        /// <param name="filter">SH to calculate convolution with. Must be symmetric around the Z axis.</param>
+        /// <returns>Convolution of this SH with <paramref name="filter"/>.</returns>
+        /// <remarks>The passed SH <paramref name="filter"/> must be symmetric around the Z axis.</remarks>
+        public void Convolve(in RawSphericalHarmonicsL2 filter)
         {
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 3; i++)
             {
-                sh[0, i] *= other[0, i];
-                sh[1, i] *= other[1, i];
-                sh[2, i] *= other[2, i];
+                float l0Coeff = Mathf.Sqrt(Mathf.PI * 4.0f);
+                sh[i, 0] *= filter[i, 0] * l0Coeff;
+
+                float l1Coeff = Mathf.Sqrt(Mathf.PI * 4.0f / 3.0f);
+                sh[i, 1] *= filter[i, 2] * l1Coeff;
+                sh[i, 2] *= filter[i, 2] * l1Coeff;
+                sh[i, 3] *= filter[i, 2] * l1Coeff;
+
+                float l2Coeff = Mathf.Sqrt(Mathf.PI * 4.0f / 5.0f);
+                sh[i, 4] *= filter[i, 6] * l2Coeff;
+                sh[i, 5] *= filter[i, 6] * l2Coeff;
+                sh[i, 6] *= filter[i, 6] * l2Coeff;
+                sh[i, 7] *= filter[i, 6] * l2Coeff;
+                sh[i, 8] *= filter[i, 6] * l2Coeff;
             }
         }
 
