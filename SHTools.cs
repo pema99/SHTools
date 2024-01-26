@@ -616,6 +616,32 @@ namespace SHTools
             this = Product(this, other);
         }
 
+        /// <summary>
+        /// Calculate the spherical integral of the product of 2 functions represented by SH coefficients.
+        /// </summary>
+        /// <param name="a">First SH of the product.</param>
+        /// <param name="b">Second SH of the product.</param>
+        /// <returns>The product of the functions represented by <paramref name="a"/> and <paramref name="b"/> integrated over the sphere.</returns>
+        public static Vector3 IntegralOfProduct(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+        {
+            Vector3 sum = Vector3.zero;
+            for (int i = 0; i < 9; i++)
+            {
+                sum += Vector3.Scale(a[i], b[i]);
+            }
+            return sum;
+        }
+
+        /// <summary>
+        /// Calculate the spherical integral of the product of 2 functions represented by SH coefficients.
+        /// </summary>
+        /// <param name="other">Other SH of the product.</param>
+        /// <returns>The product of the functions represented by this SH and <paramref name="other"/> integrated over the sphere.</returns>
+        public Vector3 IntegralOfProduct(in RawSphericalHarmonicsL2 other)
+        {
+            return IntegralOfProduct(this, in other);
+        }
+
         // Radiance convolution constants
         private const float AHat0 = Mathf.PI;
         private const float AHat1 = 2.09439510239319549230842892218633525613f; // 2*PI/3

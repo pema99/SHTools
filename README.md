@@ -46,10 +46,12 @@ struct RawSphericalHarmonicsL2 {
 
     public static RawSphericalHarmonicsL2 Lerp(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b, float t)
 
-    public static RawSphericalHarmonicsL2 Convolve(in RawSphericalHarmonicsL2 sh, in RawSphericalHarmonicsL2 filter);
-    public void Convolve(in RawSphericalHarmonicsL2 filter);
-    public static RawSphericalHarmonicsL2 Product(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b);
-    public void Product(in RawSphericalHarmonicsL2 other);
+    public static RawSphericalHarmonicsL2 Convolve(in RawSphericalHarmonicsL2 sh, in RawSphericalHarmonicsL2 filter)
+    public void Convolve(in RawSphericalHarmonicsL2 filter)
+    public static RawSphericalHarmonicsL2 Product(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+    public void Product(in RawSphericalHarmonicsL2 other)
+    public static Vector3 IntegralOfProduct(in RawSphericalHarmonicsL2 a, in RawSphericalHarmonicsL2 b)
+    public Vector3 IntegralOfProduct(in RawSphericalHarmonicsL2 other)
 
     public static void ConvolveRadianceToIrradianceInPlace(ref RawSphericalHarmonicsL2 sh)
     public static RawSphericalHarmonicsL2 ConvolveRadianceToIrradiance(in RawSphericalHarmonicsL2 sh)
